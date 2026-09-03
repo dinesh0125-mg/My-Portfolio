@@ -1,21 +1,23 @@
-import axios from "axios";
+import axios from 'axios';
 
-const API_BASE_URL =
+const baseURL =
   import.meta.env.VITE_API_URL ||
-  "https://my-portfolio-c7xv.onrender.com/api/v1";
+  'https://my-portfolio-c7xv.onrender.com/api/v1';
 
-const api = axios.create({
-  baseURL: API_BASE_URL,
+export const apiClient = axios.create({
+  baseURL,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
   timeout: 15000,
 });
 
-// Attach JWT automatically
-api.interceptors.request.use(
+// Request interceptor to attach JWT Bearer token
+apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
+    const token =
+      localStorage.getItem('portfolio_jwt_token') ||
+      sessionStorage.getItem('portfolio_jwt_token');
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -26,17 +28,31 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Handle authentication errors
-api.interceptors.response.use(
+// Response interceptor to handle session expiration
+apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      const isAuthEndpoint =
+        error.config?.url?.includes('/admin/auth/login');
+
+      if (
+        !isAuthEndpoint &&
+        window.location.pathname.startsWith('/admin') &&
+        window.location.pathname !== '/admin/login'
+      ) {
+        localStorage.removeItem('portfolio_jwt_token');
+        localStorage.removeItem('portfolio_admin_user');
+
+        sessionStorage.removeItem('portfolio_jwt_token');
+        sessionStorage.removeItem('portfolio_admin_user');
+
+        window.location.href = '/admin/login';
+      }
     }
 
     return Promise.reject(error);
   }
 );
 
-export default api;
+export default apiClient;
