@@ -61,6 +61,7 @@ import {
   getContactMessages,
   updateContactMessageStatus,
   deleteContactMessage,
+  testEmailNotification,
 } from '../controllers/contactController.js';
 import { getSettings, updateSettings } from '../controllers/settingsController.js';
 
@@ -137,6 +138,7 @@ router.put('/contact-info', updateContactInfo);
 router.get('/contact-messages', getContactMessages);
 router.put('/contact-messages/:id', updateContactMessageStatus);
 router.delete('/contact-messages/:id', deleteContactMessage);
+router.post('/test-email', testEmailNotification);
 
 // Settings
 router.get('/settings', getSettings);

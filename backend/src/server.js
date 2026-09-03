@@ -10,6 +10,7 @@ async function bootstrap() {
     logger.success(`🚀 Portfolio REST API server running on port ${ENV.PORT}`);
     logger.info(`📡 Health check available at: http://localhost:${ENV.PORT}/api/v1/health`);
     logger.info(`🌍 Public portfolio API: http://localhost:${ENV.PORT}/api/v1/portfolio`);
+    logger.info(`📬 Gmail Notifications active for: ${ENV.NOTIFICATION_RECEIVER_EMAIL}`);
   });
 
   // Graceful shutdown handling

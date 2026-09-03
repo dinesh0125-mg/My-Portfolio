@@ -13,4 +13,11 @@ export const ENV = {
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   ADMIN_NAME: process.env.ADMIN_NAME || 'Dinesh M',
   ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'nandhu0259@gmail.com',
+  // Email Notification Settings
+  SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
+  SMTP_PORT: parseInt(process.env.SMTP_PORT || '465', 10),
+  SMTP_SECURE: process.env.SMTP_SECURE !== 'false',
+  SMTP_USER: process.env.SMTP_USER || process.env.EMAIL_USER || '',
+  SMTP_PASS: process.env.SMTP_PASS || process.env.EMAIL_PASS || '',
+  NOTIFICATION_RECEIVER_EMAIL: process.env.NOTIFICATION_RECEIVER_EMAIL || process.env.ADMIN_EMAIL || 'dineshdinesh48376@gmail.com',
 };

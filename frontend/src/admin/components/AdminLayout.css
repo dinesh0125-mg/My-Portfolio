@@ -1,12 +1,13 @@
 /* ==========================================================================
    Admin Layout Stylesheet
-   Pure CSS3, sidebar drawer, header navbar, content layout, admin footer
+   Pure CSS3, top navbar dropdown layout, full-width responsive shell
    ========================================================================== */
 
 .admin-layout-wrapper {
   min-height: 100vh;
   background-color: var(--slate-50);
   display: flex;
+  flex-direction: column;
   color: var(--slate-800);
   overflow-x: hidden;
 }
@@ -17,27 +18,12 @@
   flex-direction: column;
   min-width: 0;
   width: 100%;
-  transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@media (min-width: 1024px) {
-  .admin-content-shell {
-    padding-left: 16rem;
-  }
-  .admin-content-shell.minimized {
-    padding-left: 4.25rem;
-  }
-}
-
-@media (max-width: 1023px) {
-  .admin-content-shell.mobile-minimized {
-    padding-left: 4.25rem;
-  }
+  padding-left: 0 !important;
 }
 
 .admin-page-main {
   flex: 1 1 0%;
-  padding: 0.875rem;
+  padding: 1rem;
   max-width: 80rem;
   width: 100%;
   margin-left: auto;

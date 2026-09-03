@@ -108,7 +108,7 @@ export default function Footer() {
             title="Administrator Portal"
           >
             <Lock className="w-3 h-3" />
-            <span>Admin</span>
+            <span>CMS CONNECT</span>
           </Link>
         </div>
 
@@ -117,14 +117,6 @@ export default function Footer() {
           <div className="flex items-center gap-2.5">
             <p>© {currentYear} {name}. All rights reserved.</p>
             <span>•</span>
-            <Link
-              to="/admin/login"
-              className="text-slate-400 hover:text-teal-700 transition-colors inline-flex items-center gap-1 font-medium"
-              title="Admin Login Portal"
-            >
-              <Shield className="w-3 h-3 text-slate-400" />
-              <span>Admin Login</span>
-            </Link>
           </div>
 
           <a

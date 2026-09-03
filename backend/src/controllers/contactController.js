@@ -1,10 +1,13 @@
 import { prisma } from '../config/database.js';
 import { sendSuccess, sendError } from '../utils/response.js';
+import { sendContactNotificationEmail, testSmtpConnection } from '../services/mailService.js';
 
 // Public endpoint: Submit inquiry message
 export async function submitContactMessage(req, res, next) {
   try {
     const { name, email, projectType, message } = req.body;
+    
+    // 1. Record contact inquiry in MySQL database
     const contactMessage = await prisma.contactMessage.create({
       data: {
         name,
@@ -15,7 +18,23 @@ export async function submitContactMessage(req, res, next) {
       },
     });
 
-    return sendSuccess(res, 'Your message has been received! Dinesh will reach out shortly.', { id: contactMessage.id }, 201);
+    // 2. Dispatch real-time email alert to Dinesh's Gmail
+    sendContactNotificationEmail({
+      id: contactMessage.id,
+      name,
+      email,
+      projectType: projectType || 'General Inquiry',
+      message,
+    }).catch((mailErr) => {
+      console.error('[ContactController] Background email forwarding failed:', mailErr.message);
+    });
+
+    return sendSuccess(
+      res,
+      'Your message has been received! Dinesh will reach out shortly.',
+      { id: contactMessage.id },
+      201
+    );
   } catch (err) {
     next(err);
   }
@@ -87,6 +106,19 @@ export async function deleteContactMessage(req, res, next) {
     const id = parseInt(req.params.id, 10);
     await prisma.contactMessage.delete({ where: { id } });
     return sendSuccess(res, 'Contact message deleted');
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Admin: Test Gmail SMTP connection
+export async function testEmailNotification(req, res, next) {
+  try {
+    const result = await testSmtpConnection();
+    if (!result.success) {
+      return sendError(res, result.message, 400);
+    }
+    return sendSuccess(res, 'Gmail connection verified successfully!', result);
   } catch (err) {
     next(err);
   }
