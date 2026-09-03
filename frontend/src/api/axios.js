@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
-  "https://my-portfolio-c7xv.onrender.com";
+  "https://my-portfolio-c7xv.onrender.com/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
