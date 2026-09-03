@@ -1,0 +1,127 @@
+/* ==========================================================================
+   CSS3 Admin Panel Styling
+   ========================================================================== */
+
+/* Admin Login Layout */
+.admin-login-wrapper {
+  min-height: 100vh;
+  background-color: var(--slate-900);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem 1rem;
+}
+
+.admin-glow-teal {
+  position: absolute;
+  top: -10rem;
+  right: -10rem;
+  width: 24rem;
+  height: 24rem;
+  background-color: rgba(20, 184, 166, 0.1);
+  border-radius: var(--radius-full);
+  filter: blur(64px);
+  pointer-events: none;
+}
+
+.admin-glow-blue {
+  position: absolute;
+  bottom: -10rem;
+  left: -10rem;
+  width: 24rem;
+  height: 24rem;
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: var(--radius-full);
+  filter: blur(64px);
+  pointer-events: none;
+}
+
+.admin-card-dark {
+  background-color: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  border-radius: var(--radius-3xl);
+  box-shadow: var(--shadow-2xl);
+}
+
+/* Admin Sidebar */
+.admin-sidebar {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 16rem;
+  background-color: #ffffff;
+  border-right: 1px solid var(--slate-200);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  transition: transform var(--transition-normal);
+}
+
+@media (max-width: 1023px) {
+  .admin-sidebar {
+    transform: translateX(-100%);
+  }
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+/* Admin Content Container */
+.admin-main-content {
+  min-height: 100vh;
+  background-color: var(--surface-100);
+  transition: padding-left var(--transition-normal);
+}
+
+@media (min-width: 1024px) {
+  .admin-main-content {
+    padding-left: 16rem;
+  }
+}
+
+/* Admin Form Controls */
+.admin-input {
+  width: 100%;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--slate-200);
+  background-color: #ffffff;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  color: var(--slate-900);
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.admin-input:focus {
+  border-color: var(--teal-500);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
+}
+
+.admin-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  background-color: var(--slate-50);
+  color: var(--slate-600);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--slate-200);
+}
+
+.admin-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--slate-100);
+  font-size: 0.875rem;
+  color: var(--slate-800);
+}

@@ -1,0 +1,49 @@
+/* ==========================================================================
+   About Section Component Stylesheet
+   Pure CSS3, bio highlights, skill pillar cards
+   ========================================================================== */
+
+.about-section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  background-color: rgba(248, 250, 252, 0.7);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+@media (min-width: 768px) {
+  .about-section {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+.about-highlight-card {
+  background-color: #ffffff;
+  border-radius: var(--radius-2xl);
+  padding: 1.25rem;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.about-highlight-card:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--teal-300);
+  transform: translateY(-2px);
+}
+
+.about-icon-box {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-xl);
+  background-color: var(--teal-50);
+  color: var(--teal-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.875rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}

@@ -1,0 +1,66 @@
+/* ==========================================================================
+   Contact Section Component Stylesheet
+   Pure CSS3, recruiter communication cards, contact form inputs, submit button
+   ========================================================================== */
+
+.contact-section {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  position: relative;
+  background-color: rgba(248, 250, 252, 0.7);
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+@media (min-width: 640px) {
+  .contact-section {
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .contact-section {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+.contact-channel-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius-2xl);
+  background-color: #ffffff;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  text-decoration: none;
+}
+
+@media (min-width: 640px) {
+  .contact-channel-card {
+    gap: 1rem;
+    padding: 1rem;
+  }
+}
+
+.contact-channel-card:hover {
+  border-color: var(--teal-300);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+.contact-form-container {
+  background-color: #ffffff;
+  border-radius: var(--radius-3xl);
+  padding: 1.5rem;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-card);
+}
+
+@media (min-width: 640px) {
+  .contact-form-container {
+    padding: 2rem;
+  }
+}

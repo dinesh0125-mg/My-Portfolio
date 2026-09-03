@@ -1,0 +1,43 @@
+/* ==========================================================================
+   Experience Section Component Stylesheet
+   Pure CSS3, internship timeline cards, company tags, role headers
+   ========================================================================== */
+
+.experience-section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  background-color: rgba(248, 250, 252, 0.7);
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+@media (min-width: 768px) {
+  .experience-section {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+.experience-card-container {
+  background-color: #ffffff;
+  border-radius: var(--radius-2xl);
+  padding: 1.5rem;
+  border: 1px solid var(--slate-200);
+  box-shadow: var(--shadow-card);
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+@media (min-width: 768px) {
+  .experience-card-container {
+    padding: 2rem;
+  }
+}
+
+.experience-card-container:hover {
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--teal-300);
+  transform: translateY(-2px);
+}

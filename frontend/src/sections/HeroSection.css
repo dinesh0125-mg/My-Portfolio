@@ -1,0 +1,155 @@
+/* ==========================================================================
+   Hero Section Component Stylesheet
+   Pure CSS3, responsive hero banner, identity typography, portrait card
+   ========================================================================== */
+
+.hero-section {
+  position: relative;
+  padding-top: 1.5rem;
+  padding-bottom: 3rem;
+  overflow: hidden;
+  border-bottom: 1px solid var(--slate-100);
+}
+
+@media (min-width: 640px) {
+  .hero-section {
+    padding-top: 3rem;
+    padding-bottom: 5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-section {
+    padding-top: 4rem;
+    padding-bottom: 6rem;
+  }
+}
+
+/* Ambient Backdrop Glows */
+.hero-glow-teal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 18rem;
+  height: 18rem;
+  background-color: rgba(240, 253, 250, 0.6);
+  border-radius: var(--radius-full);
+  filter: blur(64px);
+  pointer-events: none;
+  z-index: -10;
+}
+
+.hero-glow-slate {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 15rem;
+  height: 15rem;
+  background-color: rgba(241, 245, 249, 0.5);
+  border-radius: var(--radius-full);
+  filter: blur(40px);
+  pointer-events: none;
+  z-index: -10;
+}
+
+@media (min-width: 640px) {
+  .hero-glow-teal {
+    width: 24rem;
+    height: 24rem;
+  }
+  .hero-glow-slate {
+    width: 18rem;
+    height: 18rem;
+  }
+}
+
+/* Status Availability Badge */
+.hero-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  background-color: var(--teal-50);
+  color: var(--teal-800);
+  border: 1px solid rgba(153, 246, 228, 0.8);
+  margin-bottom: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .hero-status-badge {
+    padding: 0.375rem 0.875rem;
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.hero-pulse-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--teal-500);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  flex-shrink: 0;
+}
+
+/* Portrait Card Frame */
+.hero-portrait-card {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-3xl);
+  overflow: hidden;
+  border: 4px solid #ffffff;
+  box-shadow: var(--shadow-xl);
+  background-image: linear-gradient(to bottom, var(--teal-50), var(--slate-100));
+}
+
+@media (min-width: 640px) {
+  .hero-portrait-card {
+    max-width: 290px;
+  }
+}
+
+@media (min-width: 768px) {
+  .hero-portrait-card {
+    max-width: 20rem;
+  }
+}
+
+/* Portrait overlay label */
+.hero-portrait-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-image: linear-gradient(to top, rgba(11, 15, 25, 0.8), rgba(15, 23, 42, 0.4), transparent);
+  padding: 0.75rem 1rem;
+  color: #ffffff;
+}
+
+@media (min-width: 640px) {
+  .hero-portrait-overlay {
+    padding: 1rem;
+  }
+}
+
+/* Metrics stats below photo */
+.hero-stat-card {
+  background-color: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 0.5rem;
+  border: 1px solid var(--slate-200);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+}
+
+@media (min-width: 640px) {
+  .hero-stat-card {
+    padding: 0.625rem;
+  }
+}
