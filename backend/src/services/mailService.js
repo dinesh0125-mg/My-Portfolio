@@ -2,14 +2,8 @@ import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 import { ENV } from '../config/env.js';
 
-// Load .env for local development.
-// On Render, environment variables are provided automatically.
 dotenv.config();
 
-/**
- * Escape HTML characters to prevent HTML/XSS injection
- * inside email content.
- */
 function escapeHtml(text) {
   if (text === null || text === undefined) {
     return '';
@@ -23,17 +17,6 @@ function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
-/**
- * Get email configuration.
- *
- * Render:
- *   SMTP_USER
- *   SMTP_PASS
- *   NOTIFICATION_RECEIVER_EMAIL
- *
- * Local:
- *   Same values can be stored in .env
- */
 function getEmailConfig() {
   const user = (
     process.env.SMTP_USER ||
@@ -64,17 +47,6 @@ function getEmailConfig() {
   };
 }
 
-/**
- * Create Gmail SMTP transporter.
- *
- * IMPORTANT:
- * - Port 587 is used instead of 465.
- * - STARTTLS is enabled.
- * - family: 4 forces IPv4.
- *
- * This avoids Render IPv6 connection errors such as:
- * ENETUNREACH ...:465
- */
 function createTransporter() {
   const { user, pass } = getEmailConfig();
 
@@ -84,11 +56,7 @@ function createTransporter() {
 
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
-
-    // Gmail STARTTLS SMTP port
     port: 587,
-
-    // Port 587 starts as normal TCP and upgrades to TLS
     secure: false,
 
     auth: {
@@ -96,18 +64,14 @@ function createTransporter() {
       pass,
     },
 
-    // Force TLS upgrade
     requireTLS: true,
 
-    // Force IPv4 to avoid Render IPv6 ENETUNREACH issue
     family: 4,
 
-    // Connection timeouts
     connectionTimeout: 30000,
     greetingTimeout: 30000,
     socketTimeout: 30000,
 
-    // TLS configuration
     tls: {
       servername: 'smtp.gmail.com',
       minVersion: 'TLSv1.2',
@@ -115,18 +79,6 @@ function createTransporter() {
   });
 }
 
-/**
- * Send contact form notification to Dinesh's Gmail.
- *
- * @param {Object} data
- * @param {string|number} data.id
- * @param {string} data.name
- * @param {string} data.email
- * @param {string} data.projectType
- * @param {string} data.message
- *
- * @returns {Promise<Object>}
- */
 export async function sendContactNotificationEmail({
   id,
   name,
@@ -140,50 +92,18 @@ export async function sendContactNotificationEmail({
     receiver: receiverEmail,
   } = getEmailConfig();
 
-  const senderName =
-    String(name || 'Anonymous Visitor').trim();
-
-  const senderEmail =
-    String(email || 'no-reply@example.com').trim();
-
-  const topic =
-    String(projectType || 'General Inquiry').trim();
-
-  const cleanMessage =
-    String(message || '').trim();
-
-  /*
-   * ---------------------------------------------------------
-   * Validate SMTP configuration
-   * ---------------------------------------------------------
-   */
-
   if (!smtpUser || !smtpPass) {
     console.error(
-      '[MailService] SMTP configuration is missing.'
+      '[MailService] SMTP credentials are missing.'
     );
-
-    console.error(
-      '[MailService] Required environment variables:'
-    );
-
-    console.error('SMTP_USER');
-    console.error('SMTP_PASS');
-    console.error('NOTIFICATION_RECEIVER_EMAIL');
 
     return {
       sent: false,
       reason: 'SMTP_CREDENTIALS_MISSING',
       message:
-        'SMTP credentials are not configured on the server.',
+        'SMTP_USER or SMTP_PASS is not configured.',
     };
   }
-
-  /*
-   * ---------------------------------------------------------
-   * Create transporter
-   * ---------------------------------------------------------
-   */
 
   const transporter = createTransporter();
 
@@ -196,36 +116,28 @@ export async function sendContactNotificationEmail({
     };
   }
 
-  /*
-   * ---------------------------------------------------------
-   * Email subject
-   * ---------------------------------------------------------
-   */
+  const senderName =
+    String(name || 'Anonymous Visitor').trim();
+
+  const senderEmail =
+    String(email || 'no-reply@example.com').trim();
+
+  const topic =
+    String(projectType || 'General Inquiry').trim();
+
+  const cleanMessage =
+    String(message || '').trim();
 
   const subject =
     `New Portfolio Inquiry from ${senderName}: ${topic}`;
 
-  /*
-   * ---------------------------------------------------------
-   * HTML Email
-   * ---------------------------------------------------------
-   */
-
   const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>
-    ${escapeHtml(subject)}
-  </title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escapeHtml(subject)}</title>
 </head>
 
 <body
@@ -233,289 +145,230 @@ export async function sendContactNotificationEmail({
     margin:0;
     padding:24px;
     background:#f1f5f9;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family:Arial,Helvetica,sans-serif;
     color:#0f172a;
   "
 >
 
+<div
+  style="
+    max-width:600px;
+    margin:0 auto;
+    background:#ffffff;
+    border-radius:16px;
+    overflow:hidden;
+    border:1px solid #e2e8f0;
+  "
+>
+
+<div
+  style="
+    padding:28px;
+    background:#0f172a;
+    color:#ffffff;
+  "
+>
   <div
     style="
-      max-width:600px;
-      margin:0 auto;
-      background:#ffffff;
-      border-radius:16px;
-      overflow:hidden;
-      border:1px solid #e2e8f0;
+      display:inline-block;
+      padding:6px 12px;
+      border-radius:20px;
+      background:#134e4a;
+      color:#5eead4;
+      font-size:11px;
+      font-weight:700;
+      letter-spacing:.5px;
+      text-transform:uppercase;
     "
   >
-
-    <!-- Header -->
-
-    <div
-      style="
-        padding:28px;
-        background:#0f172a;
-        color:#ffffff;
-      "
-    >
-
-      <div
-        style="
-          display:inline-block;
-          padding:6px 12px;
-          border-radius:20px;
-          background:#134e4a;
-          color:#5eead4;
-          font-size:11px;
-          font-weight:700;
-          letter-spacing:.5px;
-          text-transform:uppercase;
-        "
-      >
-        Website Contact Form
-      </div>
-
-      <h1
-        style="
-          margin:14px 0 0;
-          font-size:24px;
-          line-height:1.3;
-          color:#ffffff;
-        "
-      >
-        New Portfolio Message
-      </h1>
-
-    </div>
-
-    <!-- Body -->
-
-    <div
-      style="
-        padding:28px;
-      "
-    >
-
-      <!-- Sender Information -->
-
-      <div
-        style="
-          padding:20px;
-          background:#f8fafc;
-          border:1px solid #e2e8f0;
-          border-radius:12px;
-        "
-      >
-
-        <!-- Name -->
-
-        <div style="margin-bottom:16px;">
-
-          <div
-            style="
-              margin-bottom:5px;
-              color:#64748b;
-              font-size:11px;
-              font-weight:700;
-              text-transform:uppercase;
-              letter-spacing:.5px;
-            "
-          >
-            Name
-          </div>
-
-          <div
-            style="
-              font-size:16px;
-              font-weight:600;
-              color:#0f172a;
-            "
-          >
-            ${escapeHtml(senderName)}
-          </div>
-
-        </div>
-
-        <!-- Email -->
-
-        <div style="margin-bottom:16px;">
-
-          <div
-            style="
-              margin-bottom:5px;
-              color:#64748b;
-              font-size:11px;
-              font-weight:700;
-              text-transform:uppercase;
-              letter-spacing:.5px;
-            "
-          >
-            Email
-          </div>
-
-          <div
-            style="
-              font-size:16px;
-              font-weight:600;
-            "
-          >
-
-            <a
-              href="mailto:${escapeHtml(senderEmail)}"
-              style="
-                color:#0d9488;
-                text-decoration:none;
-              "
-            >
-              ${escapeHtml(senderEmail)}
-            </a>
-
-          </div>
-
-        </div>
-
-        <!-- Subject -->
-
-        <div>
-
-          <div
-            style="
-              margin-bottom:5px;
-              color:#64748b;
-              font-size:11px;
-              font-weight:700;
-              text-transform:uppercase;
-              letter-spacing:.5px;
-            "
-          >
-            Subject
-          </div>
-
-          <div
-            style="
-              font-size:16px;
-              font-weight:600;
-              color:#0f172a;
-            "
-          >
-            ${escapeHtml(topic)}
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- Message -->
-
-      <div
-        style="
-          margin-top:24px;
-        "
-      >
-
-        <div
-          style="
-            margin-bottom:8px;
-            color:#475569;
-            font-size:11px;
-            font-weight:700;
-            text-transform:uppercase;
-            letter-spacing:.5px;
-          "
-        >
-          Message
-        </div>
-
-        <div
-          style="
-            padding:18px;
-            background:#f0fdfa;
-            border:1px solid #ccfbf1;
-            border-left:4px solid #0d9488;
-            border-radius:10px;
-            color:#134e4a;
-            font-size:15px;
-            line-height:1.7;
-            white-space:pre-wrap;
-            word-break:break-word;
-          "
-        >
-          ${escapeHtml(cleanMessage)}
-        </div>
-
-      </div>
-
-      <!-- Reply Button -->
-
-      <div
-        style="
-          margin-top:28px;
-          padding-top:20px;
-          border-top:1px solid #e2e8f0;
-          text-align:center;
-        "
-      >
-
-        <a
-          href="mailto:${escapeHtml(senderEmail)}?subject=${encodeURIComponent(
-            `Re: ${topic}`
-          )}"
-          style="
-            display:inline-block;
-            padding:12px 24px;
-            background:#0d9488;
-            color:#ffffff;
-            text-decoration:none;
-            border-radius:10px;
-            font-weight:700;
-            font-size:14px;
-          "
-        >
-          Reply to ${escapeHtml(senderName)}
-        </a>
-
-      </div>
-
-    </div>
-
-    <!-- Footer -->
-
-    <div
-      style="
-        padding:18px 24px;
-        background:#f8fafc;
-        border-top:1px solid #e2e8f0;
-        color:#94a3b8;
-        font-size:11px;
-        text-align:center;
-        line-height:1.5;
-      "
-    >
-
-      Portfolio Contact Notification
-
-      <br>
-
-      Message ID:
-      #${escapeHtml(String(id || 'N/A'))}
-
-    </div>
-
+    Website Contact Form
   </div>
+
+  <h1
+    style="
+      margin:14px 0 0;
+      font-size:24px;
+      line-height:1.3;
+      color:#ffffff;
+    "
+  >
+    New Portfolio Message
+  </h1>
+</div>
+
+<div style="padding:28px;">
+
+<div
+  style="
+    padding:20px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+  "
+>
+
+<div style="margin-bottom:16px;">
+  <div
+    style="
+      margin-bottom:5px;
+      color:#64748b;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+    "
+  >
+    Name
+  </div>
+
+  <div
+    style="
+      font-size:16px;
+      font-weight:600;
+      color:#0f172a;
+    "
+  >
+    ${escapeHtml(senderName)}
+  </div>
+</div>
+
+<div style="margin-bottom:16px;">
+  <div
+    style="
+      margin-bottom:5px;
+      color:#64748b;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+    "
+  >
+    Email
+  </div>
+
+  <div style="font-size:16px;font-weight:600;">
+    <a
+      href="mailto:${escapeHtml(senderEmail)}"
+      style="
+        color:#0d9488;
+        text-decoration:none;
+      "
+    >
+      ${escapeHtml(senderEmail)}
+    </a>
+  </div>
+</div>
+
+<div>
+  <div
+    style="
+      margin-bottom:5px;
+      color:#64748b;
+      font-size:11px;
+      font-weight:700;
+      text-transform:uppercase;
+    "
+  >
+    Subject
+  </div>
+
+  <div
+    style="
+      font-size:16px;
+      font-weight:600;
+      color:#0f172a;
+    "
+  >
+    ${escapeHtml(topic)}
+  </div>
+</div>
+
+</div>
+
+<div style="margin-top:24px;">
+
+<div
+  style="
+    margin-bottom:8px;
+    color:#475569;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+  "
+>
+  Message
+</div>
+
+<div
+  style="
+    padding:18px;
+    background:#f0fdfa;
+    border:1px solid #ccfbf1;
+    border-left:4px solid #0d9488;
+    border-radius:10px;
+    color:#134e4a;
+    font-size:15px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    word-break:break-word;
+  "
+>
+${escapeHtml(cleanMessage)}
+</div>
+
+</div>
+
+<div
+  style="
+    margin-top:28px;
+    padding-top:20px;
+    border-top:1px solid #e2e8f0;
+    text-align:center;
+  "
+>
+<a
+  href="mailto:${escapeHtml(senderEmail)}?subject=${encodeURIComponent(
+    `Re: ${topic}`
+  )}"
+  style="
+    display:inline-block;
+    padding:12px 24px;
+    background:#0d9488;
+    color:#ffffff;
+    text-decoration:none;
+    border-radius:10px;
+    font-weight:700;
+    font-size:14px;
+  "
+>
+  Reply to ${escapeHtml(senderName)}
+</a>
+</div>
+
+</div>
+
+<div
+  style="
+    padding:18px 24px;
+    background:#f8fafc;
+    border-top:1px solid #e2e8f0;
+    color:#94a3b8;
+    font-size:11px;
+    text-align:center;
+    line-height:1.5;
+  "
+>
+Portfolio Contact Notification
+<br>
+Message ID: #${escapeHtml(String(id || 'N/A'))}
+</div>
+
+</div>
 
 </body>
 </html>
 `;
 
-  /*
-   * ---------------------------------------------------------
-   * Plain Text Email
-   * ---------------------------------------------------------
-   */
-
   const plainText = `
 New Portfolio Contact Message
-==============================
 
 Name:
 ${senderName}
@@ -529,20 +382,9 @@ ${topic}
 Message:
 ${cleanMessage}
 
-------------------------------
-
 Message ID:
 #${id || 'N/A'}
-
-Reply to:
-${senderEmail}
 `;
-
-  /*
-   * ---------------------------------------------------------
-   * Send Email
-   * ---------------------------------------------------------
-   */
 
   try {
     console.log(
@@ -559,15 +401,10 @@ ${senderEmail}
 
     const info = await transporter.sendMail({
       from: `"Dinesh Portfolio" <${smtpUser}>`,
-
       to: receiverEmail,
-
       replyTo: senderEmail,
-
       subject,
-
       text: plainText,
-
       html: htmlContent,
     });
 
@@ -579,16 +416,11 @@ ${senderEmail}
       `[MailService] Message ID: ${info.messageId}`
     );
 
-    console.log(
-      `[MailService] Receiver: ${receiverEmail}`
-    );
-
     return {
       sent: true,
       messageId: info.messageId,
       receiver: receiverEmail,
     };
-
   } catch (error) {
     console.error(
       '[MailService] Failed to send Gmail notification.'
@@ -599,10 +431,6 @@ ${senderEmail}
       error.message
     );
 
-    /*
-     * Common Gmail authentication errors
-     */
-
     if (
       error.code === 'EAUTH' ||
       error.responseCode === 535
@@ -612,13 +440,9 @@ ${senderEmail}
       );
 
       console.error(
-        '[MailService] Check SMTP_USER and Gmail App Password.'
+        '[MailService] Use a Gmail App Password.'
       );
     }
-
-    /*
-     * Connection errors
-     */
 
     if (
       error.code === 'ECONNECTION' ||
@@ -627,11 +451,7 @@ ${senderEmail}
       error.code === 'ECONNREFUSED'
     ) {
       console.error(
-        '[MailService] Could not connect to Gmail SMTP server.'
-      );
-
-      console.error(
-        '[MailService] Using smtp.gmail.com:587 with IPv4.'
+        '[MailService] Gmail SMTP connection failed.'
       );
     }
 
@@ -643,13 +463,6 @@ ${senderEmail}
   }
 }
 
-
-/**
- * Test Gmail SMTP connection.
- *
- * Useful for checking Render SMTP configuration
- * without submitting a contact form.
- */
 export async function testSmtpConnection() {
   const {
     user,
@@ -693,7 +506,6 @@ export async function testSmtpConnection() {
       user,
       receiver,
     };
-
   } catch (error) {
     console.error(
       '[MailService] Gmail SMTP verification failed:',
