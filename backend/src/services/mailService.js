@@ -32,7 +32,7 @@ function escapeHtml(text) {
  *   NOTIFICATION_RECEIVER_EMAIL
  *
  * Local:
- *   same values can be stored in .env
+ *   Same values can be stored in .env
  */
 function getEmailConfig() {
   const user = (
@@ -66,6 +66,14 @@ function getEmailConfig() {
 
 /**
  * Create Gmail SMTP transporter.
+ *
+ * IMPORTANT:
+ * - Port 587 is used instead of 465.
+ * - STARTTLS is enabled.
+ * - family: 4 forces IPv4.
+ *
+ * This avoids Render IPv6 connection errors such as:
+ * ENETUNREACH ...:465
  */
 function createTransporter() {
   const { user, pass } = getEmailConfig();
@@ -75,17 +83,35 @@ function createTransporter() {
   }
 
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+
+    // Gmail STARTTLS SMTP port
+    port: 587,
+
+    // Port 587 starts as normal TCP and upgrades to TLS
+    secure: false,
 
     auth: {
       user,
       pass,
     },
 
-    // Helps detect connection/authentication problems.
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
+    // Force TLS upgrade
+    requireTLS: true,
+
+    // Force IPv4 to avoid Render IPv6 ENETUNREACH issue
+    family: 4,
+
+    // Connection timeouts
+    connectionTimeout: 30000,
+    greetingTimeout: 30000,
+    socketTimeout: 30000,
+
+    // TLS configuration
+    tls: {
+      servername: 'smtp.gmail.com',
+      minVersion: 'TLSv1.2',
+    },
   });
 }
 
@@ -141,17 +167,9 @@ export async function sendContactNotificationEmail({
       '[MailService] Required environment variables:'
     );
 
-    console.error(
-      'SMTP_USER'
-    );
-
-    console.error(
-      'SMTP_PASS'
-    );
-
-    console.error(
-      'NOTIFICATION_RECEIVER_EMAIL'
-    );
+    console.error('SMTP_USER');
+    console.error('SMTP_PASS');
+    console.error('NOTIFICATION_RECEIVER_EMAIL');
 
     return {
       sent: false,
@@ -195,11 +213,9 @@ export async function sendContactNotificationEmail({
 
   const htmlContent = `
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-
   <meta charset="UTF-8">
 
   <meta
@@ -210,7 +226,6 @@ export async function sendContactNotificationEmail({
   <title>
     ${escapeHtml(subject)}
   </title>
-
 </head>
 
 <body
@@ -218,10 +233,7 @@ export async function sendContactNotificationEmail({
     margin:0;
     padding:24px;
     background:#f1f5f9;
-    font-family:
-      Arial,
-      Helvetica,
-      sans-serif;
+    font-family:Arial, Helvetica, sans-serif;
     color:#0f172a;
   "
 >
@@ -276,7 +288,6 @@ export async function sendContactNotificationEmail({
 
     </div>
 
-
     <!-- Body -->
 
     <div
@@ -295,6 +306,8 @@ export async function sendContactNotificationEmail({
           border-radius:12px;
         "
       >
+
+        <!-- Name -->
 
         <div style="margin-bottom:16px;">
 
@@ -323,6 +336,7 @@ export async function sendContactNotificationEmail({
 
         </div>
 
+        <!-- Email -->
 
         <div style="margin-bottom:16px;">
 
@@ -360,6 +374,7 @@ export async function sendContactNotificationEmail({
 
         </div>
 
+        <!-- Subject -->
 
         <div>
 
@@ -390,7 +405,6 @@ export async function sendContactNotificationEmail({
 
       </div>
 
-
       <!-- Message -->
 
       <div
@@ -412,7 +426,6 @@ export async function sendContactNotificationEmail({
           Message
         </div>
 
-
         <div
           style="
             padding:18px;
@@ -431,7 +444,6 @@ export async function sendContactNotificationEmail({
         </div>
 
       </div>
-
 
       <!-- Reply Button -->
 
@@ -466,7 +478,6 @@ export async function sendContactNotificationEmail({
 
     </div>
 
-
     <!-- Footer -->
 
     <div
@@ -493,7 +504,6 @@ export async function sendContactNotificationEmail({
   </div>
 
 </body>
-
 </html>
 `;
 
@@ -539,6 +549,14 @@ ${senderEmail}
       `[MailService] Sending contact email to ${receiverEmail}...`
     );
 
+    console.log(
+      '[MailService] SMTP server: smtp.gmail.com:587'
+    );
+
+    console.log(
+      '[MailService] SMTP connection: IPv4 + STARTTLS'
+    );
+
     const info = await transporter.sendMail({
       from: `"Dinesh Portfolio" <${smtpUser}>`,
 
@@ -554,7 +572,7 @@ ${senderEmail}
     });
 
     console.log(
-      `[MailService] Email sent successfully.`
+      '[MailService] Email sent successfully.'
     );
 
     console.log(
@@ -572,7 +590,6 @@ ${senderEmail}
     };
 
   } catch (error) {
-
     console.error(
       '[MailService] Failed to send Gmail notification.'
     );
@@ -583,7 +600,7 @@ ${senderEmail}
     );
 
     /*
-     * Common Gmail errors
+     * Common Gmail authentication errors
      */
 
     if (
@@ -599,12 +616,22 @@ ${senderEmail}
       );
     }
 
+    /*
+     * Connection errors
+     */
+
     if (
       error.code === 'ECONNECTION' ||
-      error.code === 'ETIMEDOUT'
+      error.code === 'ETIMEDOUT' ||
+      error.code === 'ENETUNREACH' ||
+      error.code === 'ECONNREFUSED'
     ) {
       console.error(
         '[MailService] Could not connect to Gmail SMTP server.'
+      );
+
+      console.error(
+        '[MailService] Using smtp.gmail.com:587 with IPv4.'
       );
     }
 
@@ -624,7 +651,6 @@ ${senderEmail}
  * without submitting a contact form.
  */
 export async function testSmtpConnection() {
-
   const {
     user,
     pass,
@@ -632,10 +658,8 @@ export async function testSmtpConnection() {
   } = getEmailConfig();
 
   if (!user || !pass) {
-
     return {
       success: false,
-
       message:
         'SMTP_USER or SMTP_PASS is missing.',
     };
@@ -644,16 +668,17 @@ export async function testSmtpConnection() {
   const transporter = createTransporter();
 
   if (!transporter) {
-
     return {
       success: false,
-
       message:
         'Unable to create Gmail transporter.',
     };
   }
 
   try {
+    console.log(
+      '[MailService] Testing Gmail SMTP connection...'
+    );
 
     await transporter.verify();
 
@@ -663,17 +688,13 @@ export async function testSmtpConnection() {
 
     return {
       success: true,
-
       message:
         'Gmail SMTP connection verified successfully.',
-
       user,
-
       receiver,
     };
 
   } catch (error) {
-
     console.error(
       '[MailService] Gmail SMTP verification failed:',
       error.message
@@ -681,9 +702,7 @@ export async function testSmtpConnection() {
 
     return {
       success: false,
-
       message: error.message,
-
       code: error.code || null,
     };
   }
