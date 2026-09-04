@@ -7,6 +7,9 @@ export const certificatesData = [
     issuerBadge: "Infosys Springboard",
     skills: ["Core & Advanced Java", "OOP", "Collections Framework", "Exception Handling", "Multithreading"],
     icon: "Code",
+    certificateUrl: "https://infyspringboard.onwingspan.com",
+    certificateImageUrl: "https://res.cloudinary.com/dfngk8e8p/image/upload/v1788521199/portfolio/certificates/rkt5xjvt6jeety4bjosw.png",
+    certificateImagePublicId: "portfolio/certificates/rkt5xjvt6jeety4bjosw",
   },
   {
     id: "cert-copilot",
@@ -16,6 +19,9 @@ export const certificatesData = [
     issuerBadge: "Infosys AI Certified",
     skills: ["AI-Assisted Development", "Prompt Engineering", "Copilot Integration in VS Code", "Productivity"],
     icon: "Bot",
+    certificateUrl: "https://infyspringboard.onwingspan.com",
+    certificateImageUrl: "https://res.cloudinary.com/dfngk8e8p/image/upload/v1788521212/portfolio/certificates/jn7cwvhhgtixytkklwz0.png",
+    certificateImagePublicId: "portfolio/certificates/jn7cwvhhgtixytkklwz0",
   },
   {
     id: "cert-python",
@@ -25,5 +31,9 @@ export const certificatesData = [
     issuerBadge: "CodeTantra Certified",
     skills: ["Python Fundamentals", "Data Structures", "Scripting", "Algorithmic Problem-Solving"],
     icon: "Terminal",
+    certificateUrl: "https://codetantra.com",
+    certificateImageUrl: "https://res.cloudinary.com/dfngk8e8p/image/upload/v1788521223/portfolio/certificates/w7qqaudtzbtk780rtzdd.png",
+    certificateImagePublicId: "portfolio/certificates/w7qqaudtzbtk780rtzdd",
   },
 ];
+
