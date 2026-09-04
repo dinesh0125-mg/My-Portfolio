@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const baseURL =
   import.meta.env.VITE_API_URL ||
-  'https://my-portfolio-c7xv.onrender.com/api/v1';
+  'https://my-portfolio-xcwj.onrender.com/api/v1';
 
 export const apiClient = axios.create({
   baseURL,
