@@ -11,18 +11,7 @@ import {
 } from '../services/mailService.js';
 
 
-/*
- * =========================================================
- * PUBLIC
- * SUBMIT CONTACT MESSAGE
- * =========================================================
- */
-
-export async function submitContactMessage(
-  req,
-  res,
-  next
-) {
+export async function submitContactMessage(req, res, next) {
   try {
     const {
       name,
@@ -31,51 +20,29 @@ export async function submitContactMessage(
       message,
     } = req.body;
 
-
-    /*
-     * -------------------------------------------------------
-     * VALIDATION
-     * -------------------------------------------------------
-     */
-
     if (!name || !String(name).trim()) {
-      return sendError(
-        res,
-        'Name is required',
-        400
-      );
+      return sendError(res, 'Name is required', 400);
     }
 
     if (!email || !String(email).trim()) {
-      return sendError(
-        res,
-        'Email is required',
-        400
-      );
+      return sendError(res, 'Email is required', 400);
     }
 
     if (!message || !String(message).trim()) {
-      return sendError(
-        res,
-        'Message is required',
-        400
-      );
+      return sendError(res, 'Message is required', 400);
     }
 
-
-    /*
-     * -------------------------------------------------------
-     * EMAIL VALIDATION
-     * -------------------------------------------------------
-     */
+    const cleanName = String(name).trim();
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanProjectType = String(
+      projectType || 'General Inquiry'
+    ).trim();
+    const cleanMessage = String(message).trim();
 
     const emailRegex =
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const rawEmail =
-      String(email).trim();
-
-    if (!emailRegex.test(rawEmail)) {
+    if (!emailRegex.test(cleanEmail)) {
       return sendError(
         res,
         'Please provide a valid email address',
@@ -83,41 +50,8 @@ export async function submitContactMessage(
       );
     }
 
-
-    /*
-     * -------------------------------------------------------
-     * CLEAN INPUT
-     * -------------------------------------------------------
-     */
-
-    const cleanName =
-      String(name).trim();
-
-    const cleanEmail =
-      rawEmail.toLowerCase();
-
-    const cleanProjectType =
-      String(
-        projectType ||
-        'General Inquiry'
-      ).trim();
-
-    const cleanMessage =
-      String(message).trim();
-
-
-    /*
-     * -------------------------------------------------------
-     * OPTIONAL LENGTH VALIDATION
-     * -------------------------------------------------------
-     */
-
     if (cleanName.length > 100) {
-      return sendError(
-        res,
-        'Name is too long',
-        400
-      );
+      return sendError(res, 'Name is too long', 400);
     }
 
     if (cleanEmail.length > 255) {
@@ -144,13 +78,9 @@ export async function submitContactMessage(
       );
     }
 
-
     /*
-     * =======================================================
-     * 1. SAVE MESSAGE TO POSTGRESQL
-     * =======================================================
+     * Save to PostgreSQL
      */
-
     const contactMessage =
       await prisma.contactMessage.create({
         data: {
@@ -166,20 +96,9 @@ export async function submitContactMessage(
       `[ContactController] Contact message saved. ID: ${contactMessage.id}`
     );
 
-
     /*
-     * =======================================================
-     * 2. SEND GMAIL NOTIFICATION
-     * =======================================================
-     *
-     * IMPORTANT:
-     *
-     * We WAIT for the mail result.
-     *
-     * This allows us to know whether Gmail actually
-     * accepted the message.
+     * Send email
      */
-
     let mailResult;
 
     try {
@@ -191,10 +110,9 @@ export async function submitContactMessage(
           projectType: cleanProjectType,
           message: cleanMessage,
         });
-
     } catch (mailError) {
       console.error(
-        '[ContactController] Gmail notification exception:',
+        '[ContactController] Email exception:',
         mailError
       );
 
@@ -205,32 +123,17 @@ export async function submitContactMessage(
       };
     }
 
-
     /*
-     * =======================================================
-     * 3. CHECK MAIL RESULT
-     * =======================================================
+     * Email failed
      */
-
-    if (!mailResult || !mailResult.sent) {
-
+    if (!mailResult?.sent) {
       console.error(
-        '[ContactController] Gmail notification failed:',
+        '[ContactController] Email failed:',
         mailResult?.error ||
-        mailResult?.message ||
-        mailResult?.reason ||
-        'Unknown mail error'
+          mailResult?.message ||
+          mailResult?.reason ||
+          'Unknown error'
       );
-
-
-      /*
-       * IMPORTANT:
-       *
-       * The contact message remains in PostgreSQL.
-       *
-       * We DO NOT delete it because the admin dashboard
-       * should still contain the visitor's message.
-       */
 
       return sendError(
         res,
@@ -239,31 +142,12 @@ export async function submitContactMessage(
       );
     }
 
-
     /*
-     * =======================================================
-     * 4. EMAIL SUCCESS
-     * =======================================================
+     * Email successful
      */
-
     console.log(
-      `[ContactController] Gmail notification sent successfully.`
+      '[ContactController] Gmail notification sent successfully.'
     );
-
-    console.log(
-      `[ContactController] Message ID: ${contactMessage.id}`
-    );
-
-    console.log(
-      `[ContactController] Gmail Message ID: ${mailResult.messageId}`
-    );
-
-
-    /*
-     * =======================================================
-     * 5. FINAL RESPONSE
-     * =======================================================
-     */
 
     return sendSuccess(
       res,
@@ -277,7 +161,6 @@ export async function submitContactMessage(
     );
 
   } catch (err) {
-
     console.error(
       '[ContactController] Contact submission error:',
       err
@@ -288,20 +171,12 @@ export async function submitContactMessage(
 }
 
 
-/*
- * =========================================================
- * ADMIN
- * GET CONTACT INFORMATION
- * =========================================================
- */
+/* =========================================================
+   ADMIN - CONTACT INFO
+========================================================= */
 
-export async function getContactInfo(
-  req,
-  res,
-  next
-) {
+export async function getContactInfo(req, res, next) {
   try {
-
     const contactInfo =
       await prisma.contactInfo.findFirst();
 
@@ -312,28 +187,14 @@ export async function getContactInfo(
         contact: contactInfo,
       }
     );
-
   } catch (err) {
-
     next(err);
   }
 }
 
 
-/*
- * =========================================================
- * ADMIN
- * UPDATE CONTACT INFORMATION
- * =========================================================
- */
-
-export async function updateContactInfo(
-  req,
-  res,
-  next
-) {
+export async function updateContactInfo(req, res, next) {
   try {
-
     const data = req.body;
 
     const existing =
@@ -341,37 +202,20 @@ export async function updateContactInfo(
 
     let updated;
 
-
-    /*
-     * Update existing contact information
-     */
-
     if (existing) {
-
       updated =
         await prisma.contactInfo.update({
           where: {
             id: existing.id,
           },
-
           data,
         });
-
-    }
-
-    /*
-     * Create if it doesn't exist
-     */
-
-    else {
-
+    } else {
       updated =
         await prisma.contactInfo.create({
           data,
         });
-
     }
-
 
     return sendSuccess(
       res,
@@ -380,20 +224,15 @@ export async function updateContactInfo(
         contact: updated,
       }
     );
-
   } catch (err) {
-
     next(err);
   }
 }
 
 
-/*
- * =========================================================
- * ADMIN
- * GET ALL CONTACT MESSAGES
- * =========================================================
- */
+/* =========================================================
+   ADMIN - CONTACT MESSAGES
+========================================================= */
 
 export async function getContactMessages(
   req,
@@ -401,14 +240,12 @@ export async function getContactMessages(
   next
 ) {
   try {
-
     const messages =
       await prisma.contactMessage.findMany({
         orderBy: {
           createdAt: 'desc',
         },
       });
-
 
     return sendSuccess(
       res,
@@ -417,20 +254,11 @@ export async function getContactMessages(
         messages,
       }
     );
-
   } catch (err) {
-
     next(err);
   }
 }
 
-
-/*
- * =========================================================
- * ADMIN
- * UPDATE CONTACT MESSAGE STATUS
- * =========================================================
- */
 
 export async function updateContactMessageStatus(
   req,
@@ -438,32 +266,17 @@ export async function updateContactMessageStatus(
   next
 ) {
   try {
-
-    const id =
-      parseInt(req.params.id, 10);
-
-
-    /*
-     * Validate ID
-     */
+    const id = parseInt(req.params.id, 10);
 
     if (Number.isNaN(id)) {
-
       return sendError(
         res,
         'Invalid message ID',
         400
       );
-
     }
 
-
     const { status } = req.body;
-
-
-    /*
-     * Allowed statuses
-     */
 
     const allowedStatuses = [
       'NEW',
@@ -472,33 +285,23 @@ export async function updateContactMessageStatus(
       'ARCHIVED',
     ];
 
-
     if (!allowedStatuses.includes(status)) {
-
       return sendError(
         res,
         'Invalid message status',
         400
       );
-
     }
-
-
-    /*
-     * Update
-     */
 
     const message =
       await prisma.contactMessage.update({
         where: {
           id,
         },
-
         data: {
           status,
         },
       });
-
 
     return sendSuccess(
       res,
@@ -507,20 +310,11 @@ export async function updateContactMessageStatus(
         message,
       }
     );
-
   } catch (err) {
-
     next(err);
   }
 }
 
-
-/*
- * =========================================================
- * ADMIN
- * DELETE CONTACT MESSAGE
- * =========================================================
- */
 
 export async function deleteContactMessage(
   req,
@@ -528,29 +322,15 @@ export async function deleteContactMessage(
   next
 ) {
   try {
-
-    const id =
-      parseInt(req.params.id, 10);
-
-
-    /*
-     * Validate ID
-     */
+    const id = parseInt(req.params.id, 10);
 
     if (Number.isNaN(id)) {
-
       return sendError(
         res,
         'Invalid message ID',
         400
       );
-
     }
-
-
-    /*
-     * Delete message
-     */
 
     await prisma.contactMessage.delete({
       where: {
@@ -558,25 +338,19 @@ export async function deleteContactMessage(
       },
     });
 
-
     return sendSuccess(
       res,
       'Contact message deleted'
     );
-
   } catch (err) {
-
     next(err);
   }
 }
 
 
-/*
- * =========================================================
- * ADMIN
- * TEST GMAIL SMTP CONNECTION
- * =========================================================
- */
+/* =========================================================
+   ADMIN - TEST SMTP
+========================================================= */
 
 export async function testEmailNotification(
   req,
@@ -584,55 +358,28 @@ export async function testEmailNotification(
   next
 ) {
   try {
-
     console.log(
       '[ContactController] Testing Gmail SMTP connection...'
     );
 
-
     const result =
       await testSmtpConnection();
 
-
-    /*
-     * SMTP failed
-     */
-
     if (!result.success) {
-
-      console.error(
-        '[ContactController] Gmail SMTP test failed:',
-        result.message
-      );
-
-
       return sendError(
         res,
         result.message ||
-        'Gmail SMTP connection failed.',
+          'Gmail SMTP connection failed.',
         400
       );
-
     }
-
-
-    /*
-     * SMTP successful
-     */
-
-    console.log(
-      '[ContactController] Gmail SMTP test successful.'
-    );
-
 
     return sendSuccess(
       res,
       'Gmail connection verified successfully!',
       result
     );
-
   } catch (err) {
-
     console.error(
       '[ContactController] SMTP test exception:',
       err
