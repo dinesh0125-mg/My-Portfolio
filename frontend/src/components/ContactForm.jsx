@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { Send, Copy, Check, AlertCircle, Loader2 } from 'lucide-react';
+import {
+  Send,
+  Copy,
+  Check,
+  AlertCircle,
+  Loader2,
+} from 'lucide-react';
+
 import Button from './Button';
+import { profileData } from '../data/profile';
 import { contactService } from '../api/contactService';
 
 export default function ContactForm() {
@@ -69,11 +77,19 @@ export default function ContactForm() {
       return;
     }
 
-    setLoading(true);
+    setErrors({});
     setServerError('');
     setSubmitted(false);
+    setLoading(true);
 
     try {
+      /*
+       * Send directly to backend.
+       *
+       * NO mailto:
+       * NO Gmail compose
+       * NO external email application
+       */
       const response = await contactService.submitMessage({
         name: formData.name.trim(),
         email: formData.email.trim(),
@@ -82,18 +98,28 @@ export default function ContactForm() {
       });
 
       /*
-       * Backend response must confirm email was sent.
+       * Backend response:
+       *
+       * {
+       *   success: true,
+       *   message: "...",
+       *   data: {
+       *     id: 1,
+       *     emailSent: true,
+       *     messageId: "..."
+       *   }
+       * }
        */
-      if (!response?.data?.emailSent) {
+
+      const emailSent = response?.data?.emailSent;
+
+      if (!emailSent) {
         throw new Error(
           response?.message ||
-            'Message could not be sent. Please try again later.'
+            'Message was saved, but email notification could not be sent.'
         );
       }
 
-      /*
-       * Success
-       */
       setSubmitted(true);
 
       setFormData({
@@ -101,28 +127,26 @@ export default function ContactForm() {
         email: '',
         message: '',
       });
-
-      setErrors({});
     } catch (err) {
       console.error(
-        '[ContactForm] Message submission failed:',
+        '[ContactForm] Contact submission failed:',
         err
       );
-
-      const errorMessage =
-        err?.response?.data?.message ||
-        err?.message ||
-        'Unable to send your message. Please try again later.';
 
       /*
        * IMPORTANT:
        *
-       * No mailto fallback here.
-       *
-       * This prevents Gmail / Outlook / mail app
-       * from opening when backend email fails.
+       * Do NOT open Gmail.
+       * Do NOT use window.location.href = mailto:...
        */
-      setServerError(errorMessage);
+
+      const backendMessage =
+        err?.response?.data?.message ||
+        err?.message ||
+        'Unable to send your message. Please try again later.';
+
+      setServerError(backendMessage);
+      setSubmitted(false);
     } finally {
       setLoading(false);
     }
@@ -130,15 +154,7 @@ export default function ContactForm() {
 
   const handleCopyEmail = async () => {
     try {
-      /*
-       * Get email from the backend/public contact data if
-       * available in your app later.
-       *
-       * For now this uses the fixed portfolio email.
-       */
-      await navigator.clipboard.writeText(
-        'dineshdinesh48376@gmail.com'
-      );
+      await navigator.clipboard.writeText(profileData.email);
 
       setCopied(true);
 
@@ -146,7 +162,7 @@ export default function ContactForm() {
         setCopied(false);
       }, 3000);
     } catch (error) {
-      console.warn(
+      console.error(
         '[ContactForm] Failed to copy email:',
         error
       );
@@ -156,6 +172,7 @@ export default function ContactForm() {
   return (
     <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-200 shadow-card">
 
+      {/* Header */}
       <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mb-5 sm:mb-6 pb-4 border-b border-slate-100">
 
         <div>
@@ -190,6 +207,7 @@ export default function ContactForm() {
         </button>
       </div>
 
+      {/* Success Message */}
       {submitted && (
         <div className="mb-5 p-3.5 sm:p-4 rounded-2xl bg-teal-50 border border-teal-200 text-xs text-teal-800 flex items-start gap-2.5 animate-in fade-in duration-200">
 
@@ -200,24 +218,26 @@ export default function ContactForm() {
               Thank you! Your message has been sent.
             </p>
 
-            <p className="text-teal-700 mt-0.5 break-all">
-              Your message has been delivered successfully. Dinesh will get back to you shortly.
+            <p className="text-teal-700 mt-0.5">
+              Your message has been delivered to Dinesh's inbox and saved in the admin dashboard.
             </p>
           </div>
-
         </div>
       )}
 
+      {/* Server Error */}
       {serverError && (
-        <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
+        <div className="mb-5 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
 
-          <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+          <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
 
-          <span>{serverError}</span>
-
+          <span>
+            {serverError}
+          </span>
         </div>
       )}
 
+      {/* Form */}
       <form
         onSubmit={handleSubmit}
         noValidate
@@ -240,8 +260,9 @@ export default function ContactForm() {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            disabled={loading}
             placeholder="e.g. Sarah Jenkins"
+            autoComplete="name"
+            disabled={loading}
             className={`w-full text-sm px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl border bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 transition-all ${
               errors.name
                 ? 'border-red-400 bg-red-50/30'
@@ -272,8 +293,9 @@ export default function ContactForm() {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            disabled={loading}
             placeholder="name@company.com"
+            autoComplete="email"
+            disabled={loading}
             className={`w-full text-sm px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl border bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 transition-all ${
               errors.email
                 ? 'border-red-400 bg-red-50/30'
@@ -304,8 +326,8 @@ export default function ContactForm() {
             rows={4}
             value={formData.message}
             onChange={handleChange}
-            disabled={loading}
             placeholder="Hi Dinesh, we would love to discuss an opportunity..."
+            disabled={loading}
             className={`w-full text-sm px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-xl border bg-slate-50/50 text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500/40 transition-all resize-none ${
               errors.message
                 ? 'border-red-400 bg-red-50/30'
@@ -340,7 +362,6 @@ export default function ContactForm() {
           <span className="text-[11px] sm:text-xs text-slate-400 text-center sm:text-right">
             Direct response within 24 hours
           </span>
-
         </div>
 
       </form>
