@@ -362,6 +362,9 @@ async function main() {
         credentialId: 'INFY-JAVA-2026',
         skills: ['Java', 'OOP', 'Collections Framework', 'Multithreading', 'Software Engineering'],
         certificateUrl: 'https://infyspringboard.onwingspan.com',
+        certificateImageUrl:
+          'https://res.cloudinary.com/dfngk8e8p/image/upload/v1788521199/portfolio/certificates/rkt5xjvt6jeety4bjosw.png',
+        certificateImagePublicId: 'portfolio/certificates/rkt5xjvt6jeety4bjosw',
         displayOrder: 1,
       },
       {
@@ -373,6 +376,9 @@ async function main() {
         credentialId: 'INFY-COPILOT-2026',
         skills: ['GitHub Copilot', 'AI Pair Programming', 'Code Generation', 'Automated Testing'],
         certificateUrl: 'https://infyspringboard.onwingspan.com',
+        certificateImageUrl:
+          'https://res.cloudinary.com/dfngk8e8p/image/upload/v1788521212/portfolio/certificates/jn7cwvhhgtixytkklwz0.png',
+        certificateImagePublicId: 'portfolio/certificates/jn7cwvhhgtixytkklwz0',
         displayOrder: 2,
       },
       {
@@ -384,6 +390,9 @@ async function main() {
         credentialId: 'CT-PY-2024',
         skills: ['Python', 'Data Structures', 'Functions', 'File I/O', 'Algorithm Design'],
         certificateUrl: 'https://codetantra.com',
+        certificateImageUrl:
+          'https://res.cloudinary.com/dfngk8e8p/image/upload/v1788521223/portfolio/certificates/w7qqaudtzbtk780rtzdd.png',
+        certificateImagePublicId: 'portfolio/certificates/w7qqaudtzbtk780rtzdd',
         displayOrder: 3,
       },
     ],
