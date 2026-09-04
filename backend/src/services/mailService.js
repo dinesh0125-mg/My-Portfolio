@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import nodemailer from 'nodemailer';
 import { ENV } from '../config/env.js';
 
 dotenv.config();
@@ -18,65 +17,29 @@ function escapeHtml(text) {
 }
 
 function getEmailConfig() {
-  const user = (
-    process.env.SMTP_USER ||
-    ENV.SMTP_USER ||
+  const apiKey = (
+    process.env.RESEND_API_KEY ||
+    ENV.RESEND_API_KEY ||
     ''
   ).trim();
-
-  const pass = (
-    process.env.SMTP_PASS ||
-    process.env.EMAIL_PASS ||
-    ENV.SMTP_PASS ||
-    ''
-  )
-    .trim()
-    .replace(/\s+/g, '');
 
   const receiver = (
     process.env.NOTIFICATION_RECEIVER_EMAIL ||
     ENV.NOTIFICATION_RECEIVER_EMAIL ||
-    user ||
     'dineshdinesh48376@gmail.com'
   ).trim();
 
+  const sender = (
+    process.env.EMAIL_FROM ||
+    ENV.EMAIL_FROM ||
+    'Dinesh Portfolio <onboarding@resend.dev>'
+  ).trim();
+
   return {
-    user,
-    pass,
+    apiKey,
     receiver,
+    sender,
   };
-}
-
-function createTransporter() {
-  const { user, pass } = getEmailConfig();
-
-  if (!user || !pass) {
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false,
-
-    auth: {
-      user,
-      pass,
-    },
-
-    requireTLS: true,
-
-    family: 4,
-
-    connectionTimeout: 30000,
-    greetingTimeout: 30000,
-    socketTimeout: 30000,
-
-    tls: {
-      servername: 'smtp.gmail.com',
-      minVersion: 'TLSv1.2',
-    },
-  });
 }
 
 export async function sendContactNotificationEmail({
@@ -87,32 +50,20 @@ export async function sendContactNotificationEmail({
   message,
 }) {
   const {
-    user: smtpUser,
-    pass: smtpPass,
-    receiver: receiverEmail,
+    apiKey,
+    receiver,
+    sender,
   } = getEmailConfig();
 
-  if (!smtpUser || !smtpPass) {
+  if (!apiKey) {
     console.error(
-      '[MailService] SMTP credentials are missing.'
+      '[MailService] RESEND_API_KEY is missing.'
     );
 
     return {
       sent: false,
-      reason: 'SMTP_CREDENTIALS_MISSING',
-      message:
-        'SMTP_USER or SMTP_PASS is not configured.',
-    };
-  }
-
-  const transporter = createTransporter();
-
-  if (!transporter) {
-    return {
-      sent: false,
-      reason: 'SMTP_TRANSPORTER_FAILED',
-      message:
-        'Unable to create Gmail SMTP transporter.',
+      reason: 'RESEND_API_KEY_MISSING',
+      message: 'RESEND_API_KEY is not configured.',
     };
   }
 
@@ -388,72 +339,64 @@ Message ID:
 
   try {
     console.log(
-      `[MailService] Sending contact email to ${receiverEmail}...`
+      `[MailService] Sending contact email to ${receiver}...`
     );
 
-    console.log(
-      '[MailService] SMTP server: smtp.gmail.com:587'
+    const response = await fetch(
+      'https://api.resend.com/emails',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: sender,
+          to: [receiver],
+          reply_to: senderEmail,
+          subject,
+          text: plainText,
+          html: htmlContent,
+        }),
+      }
     );
 
-    console.log(
-      '[MailService] SMTP connection: IPv4 + STARTTLS'
-    );
+    const result = await response.json();
 
-    const info = await transporter.sendMail({
-      from: `"Dinesh Portfolio" <${smtpUser}>`,
-      to: receiverEmail,
-      replyTo: senderEmail,
-      subject,
-      text: plainText,
-      html: htmlContent,
-    });
+    if (!response.ok) {
+      console.error(
+        '[MailService] Resend API failed:',
+        result
+      );
+
+      return {
+        sent: false,
+        error:
+          result?.message ||
+          'Resend email delivery failed.',
+        code: result?.name || null,
+      };
+    }
 
     console.log(
       '[MailService] Email sent successfully.'
     );
 
     console.log(
-      `[MailService] Message ID: ${info.messageId}`
+      `[MailService] Resend Message ID: ${result.id}`
     );
 
     return {
       sent: true,
-      messageId: info.messageId,
-      receiver: receiverEmail,
+      messageId: result.id,
+      receiver,
     };
+
   } catch (error) {
     console.error(
-      '[MailService] Failed to send Gmail notification.'
-    );
-
-    console.error(
-      '[MailService] Error:',
+      '[MailService] Resend request failed:',
       error.message
     );
-
-    if (
-      error.code === 'EAUTH' ||
-      error.responseCode === 535
-    ) {
-      console.error(
-        '[MailService] Gmail authentication failed.'
-      );
-
-      console.error(
-        '[MailService] Use a Gmail App Password.'
-      );
-    }
-
-    if (
-      error.code === 'ECONNECTION' ||
-      error.code === 'ETIMEDOUT' ||
-      error.code === 'ENETUNREACH' ||
-      error.code === 'ECONNREFUSED'
-    ) {
-      console.error(
-        '[MailService] Gmail SMTP connection failed.'
-      );
-    }
 
     return {
       sent: false,
@@ -463,59 +406,47 @@ Message ID:
   }
 }
 
-export async function testSmtpConnection() {
-  const {
-    user,
-    pass,
-    receiver,
-  } = getEmailConfig();
+export async function testEmailConnection() {
+  const { apiKey } = getEmailConfig();
 
-  if (!user || !pass) {
+  if (!apiKey) {
     return {
       success: false,
-      message:
-        'SMTP_USER or SMTP_PASS is missing.',
-    };
-  }
-
-  const transporter = createTransporter();
-
-  if (!transporter) {
-    return {
-      success: false,
-      message:
-        'Unable to create Gmail transporter.',
+      message: 'RESEND_API_KEY is missing.',
     };
   }
 
   try {
-    console.log(
-      '[MailService] Testing Gmail SMTP connection...'
+    const response = await fetch(
+      'https://api.resend.com/domains',
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+      }
     );
 
-    await transporter.verify();
+    const result = await response.json();
 
-    console.log(
-      '[MailService] Gmail SMTP connection verified successfully.'
-    );
+    if (!response.ok) {
+      return {
+        success: false,
+        message:
+          result?.message ||
+          'Resend API connection failed.',
+      };
+    }
 
     return {
       success: true,
-      message:
-        'Gmail SMTP connection verified successfully.',
-      user,
-      receiver,
+      message: 'Resend API connection verified successfully.',
     };
-  } catch (error) {
-    console.error(
-      '[MailService] Gmail SMTP verification failed:',
-      error.message
-    );
 
+  } catch (error) {
     return {
       success: false,
       message: error.message,
-      code: error.code || null,
     };
   }
 }
