@@ -222,6 +222,25 @@ export default function CertificatesManager() {
                   <p className="text-[10px] font-mono text-slate-400 mb-2">ID: {cert.credentialId}</p>
                 )}
 
+                {cert.certificateImageUrl && (
+                  <div className="my-2 rounded-xl overflow-hidden border border-slate-200 bg-slate-50 aspect-video relative group/thumb shadow-2xs">
+                    <img
+                      src={cert.certificateImageUrl}
+                      alt={cert.title}
+                      className="w-full h-full object-cover object-top"
+                    />
+                    <a
+                      href={cert.certificateImageUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold gap-1 backdrop-blur-2xs"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Preview Image</span>
+                    </a>
+                  </div>
+                )}
+
                 <div className="flex flex-wrap gap-1 mt-2">
                   {(Array.isArray(cert.skills) ? cert.skills : []).map((sk) => (
                     <span key={sk} className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700 font-medium">
@@ -372,6 +391,46 @@ export default function CertificatesManager() {
                     />
                   </label>
                 </div>
+
+                {formData.certificateImageUrl && (
+                  <div className="mt-2.5 p-2 rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <img
+                        src={formData.certificateImageUrl}
+                        alt="Certificate Preview"
+                        className="w-16 h-11 object-cover rounded-lg border border-slate-200 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-semibold text-slate-700 block truncate">
+                          Image Attached
+                        </span>
+                        <a
+                          href={formData.certificateImageUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[10px] text-teal-600 hover:underline inline-flex items-center gap-0.5"
+                        >
+                          <span>View Full</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          certificateImageUrl: '',
+                          certificateImagePublicId: '',
+                        }))
+                      }
+                      className="p-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      title="Remove image"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
