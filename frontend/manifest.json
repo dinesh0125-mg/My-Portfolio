@@ -1,0 +1,27 @@
+{
+  "background_color": "#ffffff",
+  "description": "Dinesh M is a final-year Computer Science and Engineering student and Full Stack Developer experienced in React, Node.js, Spring Boot, Django, MySQL and MongoDB.",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "Dinesh Portfolio",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "Dinesh",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://dinesh25.vercel.app/images/dinesh-logo.png",
+      "type": "image/png",
+      "sizes": "240x240",
+      "isSquare": true,
+      "isPng": true,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 240,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ]
+}
